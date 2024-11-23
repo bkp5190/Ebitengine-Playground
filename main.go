@@ -5,6 +5,7 @@ import (
 	"image/color"
 	"log"
 	"math"
+    "fmt"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
@@ -39,6 +40,7 @@ func main() {
 
 type exampleGame struct {
 	p           *player
+    b           *button
 	inputSystem input.System
 }
 
@@ -57,6 +59,9 @@ func newExampleGame() *exampleGame {
 		input: g.inputSystem.NewHandler(0, keymap),
 		pos:   image.Point{X: 96, Y: 96},
 	}
+    g.b = &button{
+        pos: image.Point{X: 580, Y: 10},
+    }
 	return g
 }
 
@@ -66,17 +71,23 @@ func (g *exampleGame) Layout(outsideWidth, outsideHeight int) (int, int) {
 
 func (g *exampleGame) Draw(screen *ebiten.Image) {
 	g.p.Draw(screen)
+    g.b.Draw(screen)
 }
 
 func (g *exampleGame) Update() error {
 	g.inputSystem.Update()
 	g.p.Update(outsideWidth, outsideHeight)
+    g.b.Update()
 	return nil
 }
 
 type player struct {
 	input *input.Handler
 	pos   image.Point
+}
+
+type button struct {
+    pos image.Point
 }
 
 func (p *player) Update(outsideWidth, outsideHeight int) {
@@ -102,7 +113,18 @@ func (p *player) Update(outsideWidth, outsideHeight int) {
 	}
 }
 
+func (b *button) Update() {
+    x, y := ebiten.CursorPosition()
+    if x > b.pos.X && y > b.pos.X && ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
+        fmt.Printf("Should Quit Game")
+    }
+}
+
 func (p *player) Draw(screen *ebiten.Image) {
     // ebitenutil.DebugPrintAt(screen, "player", p.pos.X, p.pos.Y)
-    ebitenutil.DrawCircle(screen, float64(p.pos.X), float64(p.pos.Y), 10., color.Opaque)
+    ebitenutil.DrawCircle(screen, float64(p.pos.X), float64(p.pos.Y), 10., color.White)
+}
+
+func (b *button) Draw(screen *ebiten.Image) {
+    ebitenutil.DrawRect(screen, float64(b.pos.X), float64(b.pos.Y), 50, 20, color.White)
 }
